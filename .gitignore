@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Runtime participant data (contains personal emails — never commit)
+db.json
+db.*.json
+db.backup-*.json
+db.e2e-backup.json
+
+# Secrets
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

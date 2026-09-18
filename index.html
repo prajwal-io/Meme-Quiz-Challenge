@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>B2B Hacks Presents — Challenge 1: Quiz Challenge</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="bg-orbs"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
+<div class="grid-overlay"></div>
+<div id="alarmFlash" class="alarm-flash hidden"><span>🚨 SWITCH DETECTED — BACK TO THE QUIZ! 🚨</span></div>
+
+<!-- SPLASH INTRO -->
+<div id="splash" class="splash">
+  <div class="splash-inner">
+    <div class="presents"><span>B2B HACKS</span> PRESENTS</div>
+    <h1 class="splash-title">
+      <span class="line small">CHALLENGE Nº 1</span>
+      <span class="line big">QUIZ CHALLENGE</span>
+    </h1>
+    <p class="motto"><span class="m1">Think fast,</span> <span class="m2">laugh harder.</span></p>
+    <div class="loader"><div class="bar"></div></div>
+    <p class="skip-hint">loading arena…</p>
+  </div>
+</div>
+
+<header class="topbar hidden" id="topbar">
+  <div class="logo">B2B <span>HACKS</span></div>
+  <div class="top-meta">
+    <span class="pill">Challenge 1 · Quiz</span>
+    <span class="pill ghost" id="historyPill">Fresh set ✓</span>
+    <a class="pill link-pill" href="admin.html">Admin →</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- START / REGISTRATION -->
+  <section id="screen-start" class="card screen hidden">
+    <div class="badge">⏱ 5:00 total · 15s / question · unlimited Qs</div>
+    <h2 class="title">Start the quiz.</h2>
+    <p class="sub">Please enter your <b>name</b> and your <b>mail ID</b>. Just click on <b>Start the quiz</b>.</p>
+    <div class="rules">
+      <div><span>🚫</span> Fullscreen arena — no tabs / apps / tools. Switching fires a <b>fire alarm</b>, voids the question (−5, then −10, then −15) and flashes red.</div>
+      <div><span>⚡</span> Each question auto-submits in 15s. Solve fast to score.</div>
+      <div><span>🔁</span> Replay = brand-new set. Never repeats until you've seen them all.</div>
+    </div>
+    <label class="field"><span>Your name</span><input id="inpName" type="text" placeholder="e.g. Alex Carter" autocomplete="name" /></label>
+    <label class="field"><span>Mail ID</span><input id="inpEmail" type="email" placeholder="you@company.com" autocomplete="email" /></label>
+    <p class="err" id="formErr"></p>
+    <button class="btn primary" id="btnStart">Start the quiz →</button>
+    <p class="credit">Made with ❤️ by BacktoBase X Code Viveks Team</p>
+    <div class="row-between">
+      <button class="link" id="btnResetSeen">reset question history</button>
+      <span class="seen" id="seenInfo"></span>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="screen-quiz" class="screen hidden">
+    <div class="hud">
+      <div class="hud-box total"><label>TOTAL</label><strong id="totalTime">5:00</strong></div>
+      <div class="hud-box q"><label>THIS QUESTION</label><strong id="qTime">15</strong></div>
+      <div class="hud-box"><label>SCORE</label><strong id="liveScore">0</strong></div>
+      <div class="hud-box"><label>Q Nº</label><strong id="qCount">1</strong></div>
+    </div>
+    <div class="qtimer"><div id="qTimerFill"></div></div>
+    <div class="card quiz-card" id="quizCard">
+      <div class="q-art" id="qArt">
+        <img id="qMeme" class="q-meme" alt="" referrerpolicy="no-referrer" />
+        <span class="meme-top" id="memeTop"></span>
+        <span class="meme-bottom" id="memeBot"></span>
+        <span class="q-art-icon hidden" id="qIcon">🧠</span>
+      </div>
+      <div class="q-top"><span class="cat" id="qCat">General AI</span><span class="warn" id="violCount">⚠ 0 violations</span></div>
+      <h3 id="qText">Loading…</h3>
+      <p class="fun" id="qFun"></p>
+      <div class="opts" id="opts"></div>
+      <div class="penalty hidden" id="penalty">⚠ Tab / app switch detected — you lose points for this question. Stay in the arena!</div>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="screen-result" class="card screen hidden">
+    <div class="badge">✔ Time up — individual scorecard</div>
+    <h2 class="title" id="resTitle">Nice run!</h2>
+    <p class="sub" id="resSub"></p>
+    <div class="stats">
+      <div class="stat"><label>Score</label><strong id="rScore">0</strong></div>
+      <div class="stat"><label>Solved</label><strong id="rSolved">0/0</strong></div>
+      <div class="stat"><label>Accuracy</label><strong id="rAcc">0%</strong></div>
+      <div class="stat"><label>Violations</label><strong id="rViol">0</strong></div>
+    </div>
+    <div class="cats" id="rCats"></div>
+    <button class="btn primary" id="btnRetry">Play again — new set →</button>
+  </section>
+</main>
+
+<footer class="foot">B2B HACKS · Challenge 1 Quiz · Think fast, laugh harder. · <a href="admin.html">Admin dashboard</a></footer>
+
+<script src="questions.js"></script>
+<script src="memes.js"></script>
+<script src="stars.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

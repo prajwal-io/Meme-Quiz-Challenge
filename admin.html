@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>B2B Hacks — Admin Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="bg-orbs"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
+<div class="grid-overlay"></div>
+
+<header class="topbar">
+  <div class="logo">B2B <span>HACKS</span></div>
+  <div class="top-meta"><span class="pill">Admin · Participants</span><a class="pill link-pill" href="index.html">← Quiz</a></div>
+</header>
+
+<main class="wrap" style="max-width:900px">
+  <!-- ADMIN LOGIN -->
+  <section class="card" id="loginCard">
+    <div class="badge">🔐 Admin access only</div>
+    <h2 class="title">Admin login.</h2>
+    <p class="sub">Participants can't see this data. Enter your admin credentials to view the dashboard.</p>
+    <label class="field"><span>Username</span><input id="admUser" type="text" placeholder="Admin username" autocomplete="username" /></label>
+    <label class="field"><span>Password</span><input id="admPass" type="password" placeholder="••••••••••" autocomplete="current-password" /></label>
+    <p class="err" id="loginErr"></p>
+    <button class="btn primary" id="btnLogin">Unlock dashboard →</button>
+  </section>
+
+  <section class="card hidden" id="dashCard">
+    <div class="badge">🔐 Admin — every player + play counts</div>
+    <h2 class="title">Who's playing?</h2>
+    <p class="sub" id="srcLine">Loading…</p>
+    <div class="stats" id="aggRow" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat"><label>Players</label><strong class="big-num" id="aPlayers">–</strong></div>
+      <div class="stat"><label>Total plays</label><strong class="big-num" id="aPlays">–</strong></div>
+      <div class="stat"><label>Played 2+ times</label><strong class="big-num" id="aRepeat">–</strong></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Name</th><th>Mail ID</th><th class="num">Plays</th><th class="num">Best</th><th>Last played</th><th>Status</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="7">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="src" id="dbSrc"></p>
+    <button class="btn primary" id="btnRefresh" style="margin-top:14px">Refresh →</button>
+    <div class="row-between"><button class="link" id="btnLogout">log out</button><span class="seen">locked to admin credentials</span></div>
+  </section>
+</main>
+
+<script src="stars.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let ADMIN_TOKEN = sessionStorage.getItem("b2b_admin_token") || "";
+async function load(){
+  if(!ADMIN_TOKEN){ showLogin("Please log in to view participant data."); return; }
+  $("rows").innerHTML = "<tr><td colspan='7'>Loading…</td></tr>";
+  try{
+    const r = await fetch("/api/participants", { headers: { Authorization: "Bearer " + ADMIN_TOKEN } });
+    if(r.status === 401){ sessionStorage.removeItem("b2b_admin_token"); ADMIN_TOKEN=""; showLogin("Session expired — please log in again."); return; }
+    const d = await r.json();
+    const list = d.participants || [];
+    const plays = list.reduce((a,p)=>a+(p.plays||0),0);
+    const repeat = list.filter(p=>(p.plays||0)>=2).length;
+    $("aPlayers").textContent = list.length;
+    $("aPlays").textContent = plays;
+    $("aRepeat").textContent = repeat;
+    $("srcLine").textContent = list.length ? `${list.length} player(s), ${plays} total play(s).` : "No players yet — start the quiz to register the first one.";
+    $("dbSrc").textContent = "Source: " + (d.source || "unknown") + " · Postgres schema in schema.sql (set DATABASE_URL to switch).";
+    $("rows").innerHTML = list.length ? list.map((p,i)=>`<tr>
+      <td>${i+1}</td><td><b>${escapeHtml(p.name)}</b></td><td>${escapeHtml(p.email)}</td>
+      <td class="num"><b>${p.plays}</b></td><td class="num">${p.best_score}</td>
+      <td>${p.last_played_at ? new Date(p.last_played_at).toLocaleString() : "—"}</td>
+      <td>${p.plays>=2?'<span class="badge-multi">🔁 '+p.plays+'× player</span>':'<span class="badge-once">1× played</span>'}</td>
+    </tr>`).join("") : "<tr><td colspan='7'>No data yet.</td></tr>";
+  }catch(e){ $("rows").innerHTML="<tr><td colspan='7'>API offline — start the node server (`npm start`). Showing nothing until then.</td></tr>"; }
+}
+function showLogin(msg){
+  $("loginCard").classList.remove("hidden"); $("dashCard").classList.add("hidden");
+  if(msg) $("loginErr").textContent = msg;
+}
+async function doLogin(){
+  $("loginErr").textContent = "";
+  try{
+    const r = await fetch("/api/login", { method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ username: $("admUser").value.trim(), password: $("admPass").value.trim() }) });
+    const d = await r.json();
+    if(!d.ok) throw new Error(d.error || "login failed");
+    ADMIN_TOKEN = d.token; sessionStorage.setItem("b2b_admin_token", d.token);
+    $("loginCard").classList.add("hidden"); $("dashCard").classList.remove("hidden");
+    load();
+  }catch(e){ $("loginErr").textContent = "Invalid credentials. Access denied."; }
+}
+$("btnLogin").onclick = doLogin;
+$("admPass").addEventListener("keydown", (e)=>{ if(e.key==="Enter") doLogin(); });
+$("admUser").addEventListener("keydown", (e)=>{ if(e.key==="Enter") doLogin(); });
+["admUser","admPass"].forEach(id=>$(id).addEventListener("input", ()=>{ $("loginErr").textContent=""; }));
+function escapeHtml(s){ return String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+$("btnRefresh").onclick = load;
+$("btnLogout").onclick = () => { sessionStorage.removeItem("b2b_admin_token"); ADMIN_TOKEN=""; showLogin("Logged out."); };
+if(ADMIN_TOKEN){ $("loginCard").classList.add("hidden"); $("dashCard").classList.remove("hidden"); }
+load();
+</script>
+</body>
+</html>
